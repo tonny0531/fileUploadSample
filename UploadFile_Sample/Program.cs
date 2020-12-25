@@ -21,6 +21,10 @@ namespace UploadFile_Sample
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    webBuilder.UseKestrel(options =>
+                    {
+                        options.Limits.MaxRequestBodySize = 100 * 1024 * 1024;
+                    });
                 });
     }
 }

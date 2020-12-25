@@ -1,8 +1,6 @@
-<div>
-  <label for="file">Choose File</label>
-  <input type="file" id="file" (change) = "handleFileInput($event.target.files)">
-</div>
-{{fileToUpload}}
-<button (click)="submit()">upload</button>
+<ul>
+  <li><a routerLink='origin'>origin</a></li>
+  <li><a routerLink='ngx'>ngx-awesome-uploader</a></li>
+</ul>
 
 <router-outlet></router-outlet>

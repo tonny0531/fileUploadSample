@@ -8,5 +8,9 @@
     <Folder Include="Upload\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver.GridFS" Version="2.12.0-beta1" />
+  </ItemGroup>
+
 
 </Project>

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 
 namespace UploadFile_Sample.Controllers
 {
@@ -14,56 +17,56 @@ namespace UploadFile_Sample.Controllers
     public class UploadController : ControllerBase
     {
         private readonly string _folder;
+
         public UploadController(IWebHostEnvironment WebHostEnvironment)
         {
             _folder = $"D:\\Test";
         }
+
         [HttpGet]
         public ActionResult<string> GetPath()
         {
             return Ok(_folder);
         }
+
         [HttpPost]
-        public ActionResult Upload(IFormFile filekey)
+        public ActionResult<string> Upload(IFormFile file)
         {
             var uploads = _folder;
             if (!Directory.Exists(uploads))
             {
                 Directory.CreateDirectory(uploads);
             }
-            //foreach (var f in file)
-            {
-                //if (f.Length > 0)
-                {
-                    var filePath = Path.Combine(uploads, filekey.FileName);
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        filekey.CopyToAsync(fileStream).Wait();
-                    }
-                }
-            }
-            return Ok();
+
+            var client = new MongoClient("mongodb://localhost:27017");
+            IMongoDatabase db = client.GetDatabase("TestCol");
+            GridFSBucket bucket = new GridFSBucket(db);
+            ObjectId id = bucket.UploadFromStream(file.FileName, file.OpenReadStream());
+            return Ok(id.ToString());
         }
 
 
-        //[HttpGet("{fileName}")]
-        //public async Task<IActionResult> Download(string fileName)
-        //{
-        //    if (string.IsNullOrEmpty(fileName))
-        //    {
-        //        return NotFound();
-        //    }
+        [HttpGet("{id}")]
+        public IActionResult Download(string id)
+        {
+            try
+            {
+                var client = new MongoClient("mongodb://localhost:27017");
+                IMongoDatabase db = client.GetDatabase("TestCol");
+                GridFSBucket bucket = new GridFSBucket(db);
+                byte[] file = bucket.DownloadAsBytes(ObjectId.Parse(id));
 
-        //    var path = $@"{_folder}\{fileName}";
-        //    var memoryStream = new MemoryStream();
-        //    using (var stream = new FileStream(path, FileMode.Open))
-        //    {
-        //        await stream.CopyToAsync(memoryStream);
-        //    }
-        //    memoryStream.Seek(0, SeekOrigin.Begin);
+                Stream stream = new MemoryStream();
+                bucket.DownloadToStream(ObjectId.Parse(id), stream);
+                stream.Position = 0;
 
-        //    // 回傳檔案到 Client 需要附上 Content Type，否則瀏覽器會解析失敗。
-        //    return new FileStreamResult(memoryStream, _contentTypes[Path.GetExtension(path).ToLowerInvariant()]);
-        //}
+                return File(stream, "image/png");
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            
+        }
     }
 }
