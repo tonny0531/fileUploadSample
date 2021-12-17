@@ -22,7 +22,7 @@ export class TestFilePickerAdapter extends FilePickerAdapter {
   public uploadFile(fileItem: FilePreviewModel): Observable<UploadResponse> {
     const form = new FormData();
     form.append("file", fileItem.file);
-    const api = "https://localhost:5001/api/upload";
+    const api = "https://localhost:5001/file";
     const req = new HttpRequest("POST", api, form, { reportProgress: true });
     return this.http.request(req).pipe(
       map((res: HttpEvent<any>) => {
@@ -48,12 +48,13 @@ export class TestFilePickerAdapter extends FilePickerAdapter {
       })
     );
   }
+
   public removeFile(fileItem: FilePreviewModel): Observable<any> {
     const id = 50;
     const responseFromBackend = fileItem.uploadResponse;
     console.log(fileItem);
     const removeApi =
-      "https://localhost:5001/api/upload";
-    return this.http.post(removeApi, { id });
+      `https://localhost:5001/File/${id}`;
+    return this.http.delete(removeApi);
   }
 }

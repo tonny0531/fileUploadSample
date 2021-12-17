@@ -54,7 +54,7 @@ namespace UploadFile_Sample.Controllers
                 var client = new MongoClient("mongodb://localhost:27017");
                 IMongoDatabase db = client.GetDatabase("TestCol");
                 GridFSBucket bucket = new GridFSBucket(db);
-                byte[] file = bucket.DownloadAsBytes(ObjectId.Parse(id));
+                //byte[] file = bucket.DownloadAsBytes(ObjectId.Parse(id));
 
                 Stream stream = new MemoryStream();
                 bucket.DownloadToStream(ObjectId.Parse(id), stream);
